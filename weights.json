@@ -1,0 +1,157 @@
+{
+    "CHECKPOINTS": [
+      "epicrealism_naturalSinRC1VAE.safetensors"
+      
+    ],
+    "UPSCALE_MODELS": [
+      "4x-AnimeSharp.pth",
+      "4x-UltraMix_Balanced.pth",
+      "4x-UltraMix_Smooth.pth",
+      "4x-UltraSharp.pth",
+      "4x_foolhardy_Remacri.pth",
+      "4x_NMKD-Siax_200k.pth",
+      "4x_NMKD-Superscale-SP_178000_G.pth",
+      "8x_NMKD-Superscale_150000_G.pth",
+      "ESRGAN_4x.pth",
+      "OmniSR_X2_DIV2K.safetensors",
+      "OmniSR_X3_DIV2K.safetensors",
+      "OmniSR_X4_DIV2K.safetensors",
+      "RealESRGAN_x2.pth",
+      "RealESRGAN_x4.pth",
+      "RealESRGAN_x4plus.pth",
+      "RealESRGAN_x4plus_anime_6B.pth",
+      "RealESRGAN_x8.pth"
+    ],
+    "TEXT_ENCODERS": [
+      "ViT-L-14-TEXT-detail-improved-hiT-GmP-HF.safetensors"
+    ],
+    "CLIP": [
+      "clip-vit-large-patch14",
+      "clip_g.safetensors",
+      "clip_l.safetensors",
+      "EVA02_CLIP_L_336_psz14_s6B.pt",
+      "t5xxl_fp16.safetensors",
+      "ViT-L-14-TEXT-detail-improved-hiT-GmP-TE-only-HF.safetensors"
+    ],
+    "CLIP_VISION": [
+      "CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors",
+      "clip-vit-large-patch14.bin",
+      "clip_vision_g.safetensors",
+     
+      "IPAdapter_image_encoder_sd15.safetensors",
+      
+      "sigclip_vision_patch14_384.safetensors"
+    ],
+    "LORAS": [
+      
+      "flux-RealismLora.safetensors",
+      
+      "weight_slider-LECO-v1.safetensors"
+    ],
+    "EMBEDDINGS": [
+      
+    ],
+    "CONTROLNET": [
+      "animatediff_controlnet.ckpt"
+      
+    ],
+    "IPADAPTER": [
+      "ip-adapter-faceid-plus_sd15.bin"
+      
+    ],
+    "VAE": [
+      "ae.safetensors"
+    ],
+    "UNET": [
+      "flux1-dev.safetensors"
+    ],
+    "DIFFUSION_MODELS": [
+    ],
+    "PHOTOMAKER": [
+    ],
+    "INSTANTID": [
+      "instantid-ip-adapter.bin"
+    ],
+    "INSIGHTFACE": [
+      "antelopev2"
+    ],
+    "FACEDETECTION": [
+      "yolov5l-face.pth",
+      "yolov5n-face.pth"
+    ],
+    "FACERESTORE_MODELS": [
+      "codeformer.pth"
+    ],
+    "MMDETS": [
+      "bbox/mmdet_anime-face_yolov3.pth"
+    ],
+    "SAMS": [
+      "mobile_sam.pt"
+    ],
+    "GROUNDING-DINO": [
+      "groundingdino_swinb_cogcoor.pth"
+    ],
+    "BERT-BASE-UNCASED": [
+      "bert-base-uncased"
+    ],
+    "ULTRALYTICS": [
+      "bbox/Eyes.pt"
+    ],
+    "LAYER_MODEL": [
+
+      "vae_transparent_decoder.safetensors"
+    ],
+    "CLIPSEG": [
+      "models--CIDAS--clipseg-rd64-refined"
+    ],
+    "REMBG": [
+      "isnet-anime.onnx"
+    ],
+    "PULID": [
+      "pulid_flux_v0.9.1.safetensors"
+    ],
+    "GLIGEN": [
+      "gligen_sd14_textbox_pruned.safetensors",
+      "gligen_sd14_textbox_pruned_fp16.safetensors"
+    ],
+    "DYNAMICRAFTER": [
+      "tooncrafter_512_interp-fp16.safetensors"
+    ],
+    "ANIMATEDIFF_MODELS": [
+      "animatediff_lightning_1step_comfyui.safetensors"
+    ],
+    "ANIMATEDIFF_MOTION_LORA": [
+      "shatterAnimatediff_v10.safetensors"
+    ],
+    "LIVEPORTRAIT": [
+      "appearance_feature_extractor.safetensors"
+    ],
+    "LLM": [
+      "checkpoints/chatglm3-4bit.safetensors"
+    ],
+    "TENSORRT": [
+      "dreamshaperXL_lightningDPMSDE_DYN_A40-b-1-1-1-h-512-1536-1024-w-512-1536-1024.engine"
+    ],
+    "DIFFUSERS": [
+      "Kolors"
+    ],
+    "ULTRAPIXEL": [
+      "ultrapixel_t2i.safetensors"
+    ],
+    "INPAINT": [
+      "big-lama.pt"
+    ],
+    "STYLE_MODELS": [
+      "flux1-redux-dev.safetensors"
+    ],
+    "SAM2": [
+      "sam2_hiera_tiny.safetensors"
+    ],
+    "RESWAPPER": [
+      "reswapper_128.onnx",
+      "reswapper_256.onnx"
+    ],
+    "NSFW_DETECTOR": [
+      "vit-base-nsfw-detector"
+    ]
+  }
