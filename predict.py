@@ -26,7 +26,7 @@ ALL_DIRECTORIES = [OUTPUT_DIR, INPUT_DIR, COMFYUI_TEMP_OUTPUT_DIR]
 IMAGE_TYPES = [".jpg", ".jpeg", ".png", ".webp"]
 VIDEO_TYPES = [".mp4", ".mov", ".avi", ".mkv"]
 
-with open("example_workflow.json", "r") as file:
+with open("default_workflow.json", "r") as file:
     EXAMPLE_WORKFLOW_JSON = file.read()
 
 
