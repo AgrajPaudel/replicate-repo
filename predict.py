@@ -220,14 +220,22 @@ class Predictor(BasePredictor):
     ) -> List[Path]:
         """Run a single prediction on the model"""
         self.comfyUI.cleanup(ALL_DIRECTORIES)
-
+    
         if input_file:
             self.handle_input_file(input_file)
         if replicate_lora:
             self.handle_replicate_loras(replicate_lora, lora_name)
         if external_lora_link:
             self.handle_external_lora_links(external_lora_link, lora_name)
-
+    
+        # Check for GPU availability
+        gpu_available = self.check_gpu_availability()
+        
+        if not gpu_available:
+            print("No GPU available. Cannot run ComfyUI workflow.")
+            return [Path(os.path.join(OUTPUT_DIR, "no_gpu.txt"))]
+        
+        # Only proceed with ComfyUI workflow if GPU is available
         workflow_json_content = workflow_json
         if workflow_json.startswith(("http://", "https://")):
             try:
@@ -236,23 +244,47 @@ class Predictor(BasePredictor):
                 workflow_json_content = response.text
             except requests.exceptions.RequestException as e:
                 raise ValueError(f"Failed to download workflow JSON from URL: {e}")
-
+    
         wf = self.comfyUI.load_workflow(workflow_json_content or EXAMPLE_WORKFLOW_JSON)
-
+    
         self.comfyUI.connect()
-
+    
         if force_reset_cache or not randomise_seeds:
             self.comfyUI.reset_execution_cache()
-
+    
         if randomise_seeds:
             self.comfyUI.randomise_seeds(wf)
-
+    
         self.comfyUI.run_workflow(wf)
-
+    
         output_directories = [OUTPUT_DIR]
         if return_temp_files:
             output_directories.append(COMFYUI_TEMP_OUTPUT_DIR)
-
+    
         return optimise_images.optimise_image_files(
             output_format, output_quality, self.comfyUI.get_files(output_directories)
         )
+
+    def check_gpu_availability(self):
+        """Check if a GPU is available for use."""
+        try:
+            # Try importing torch first to check GPU availability
+            import torch
+            if torch.cuda.is_available():
+                print(f"GPU available: {torch.cuda.get_device_name(0)}")
+                return True
+            
+            # Alternative check using nvidia-smi
+            import subprocess
+            result = subprocess.run(['nvidia-smi'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if result.returncode == 0:
+                print("GPU available via nvidia-smi")
+                return True
+        except (ImportError, FileNotFoundError, subprocess.SubprocessError):
+            pass
+        
+        # Create a no_gpu.txt file to indicate no GPU was available
+        with open(os.path.join(OUTPUT_DIR, "no_gpu.txt"), "w") as f:
+            f.write("No GPU available for running ComfyUI workflow.")
+        
+        return False
