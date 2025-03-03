@@ -113,26 +113,72 @@ class Predictor(BasePredictor):
             print(f"Error downloading {url}: {e}")
             return False
 
-    def handle_replicate_lora(self, url: str):
-        tar_path = os.path.join(INPUT_DIR, "replicate_lora.tar")
-        if self.download_file(url, tar_path):
-            try:
-                with tarfile.open(tar_path, "r") as tar:
-                    for member in tar.getmembers():
-                        if member.isfile() and member.name.endswith(".safetensors"):
-                            extracted_path = os.path.join(INPUT_DIR, member.name)
-                            tar.extract(member, INPUT_DIR)
-                            dest_path = os.path.join(LORA_DIR, os.path.basename(member.name))
-                            shutil.move(extracted_path, dest_path)
-                            print(f"Moved {member.name} to {LORA_DIR}")
-            except Exception as e:
-                print(f"Error extracting LoRA from tar: {e}")
+    def handle_replicate_loras(self, urls_str: str, lora_names_str: str = ""):
+        if not urls_str.strip():
+            return
+            
+        urls = [url.strip() for url in urls_str.split('\n') if url.strip()]
+        if not urls:
+            return
+            
+        # Process custom lora names if provided
+        custom_names = []
+        if lora_names_str.strip():
+            custom_names = [name.strip() for name in lora_names_str.split(',')]
+        
+        for i, url in enumerate(urls):
+            # Determine the lora name to use
+            if i < len(custom_names) and custom_names[i].strip():
+                lora_name = custom_names[i]
+            else:
+                lora_name = "lora" if i == 0 else f"lora_{i+1}"
+                
+            # Create a unique tar path for each download
+            tar_path = os.path.join(INPUT_DIR, f"replicate_lora_{i}.tar")
+            if self.download_file(url, tar_path):
+                try:
+                    with tarfile.open(tar_path, "r") as tar:
+                        for member in tar.getmembers():
+                            if member.isfile() and member.name.endswith(".safetensors"):
+                                extracted_path = os.path.join(INPUT_DIR, member.name)
+                                tar.extract(member, INPUT_DIR)
+                                
+                                # Use custom name with safetensors extension
+                                custom_lora_filename = f"{lora_name}.safetensors"
+                                
+                                dest_path = os.path.join(LORA_DIR, custom_lora_filename)
+                                shutil.move(extracted_path, dest_path)
+                                print(f"Moved and renamed to {custom_lora_filename} in {LORA_DIR}")
+                                # Process only the first safetensors file in each tar
+                                break
+                except Exception as e:
+                    print(f"Error extracting LoRA from tar {i}: {e}")
 
-    def handle_external_lora_link(self, url: str):
-        lora_filename = os.path.basename(url)
-        lora_path = os.path.join(LORA_DIR, lora_filename)
-        if self.download_file(url, lora_path):
-            print(f"Downloaded external LoRA to {LORA_DIR}")
+    def handle_external_lora_links(self, urls_str: str, lora_names_str: str = ""):
+        if not urls_str.strip():
+            return
+            
+        urls = [url.strip() for url in urls_str.split('\n') if url.strip()]
+        if not urls:
+            return
+        
+        # Process custom lora names if provided
+        custom_names = []
+        if lora_names_str.strip():
+            custom_names = [name.strip() for name in lora_names_str.split(',')]
+        
+        for i, url in enumerate(urls):
+            # Determine the lora name to use
+            if i < len(custom_names) and custom_names[i].strip():
+                lora_name = custom_names[i]
+            else:
+                lora_name = "lora" if i == 0 else f"lora_{i+1}"
+            
+            custom_lora_filename = f"{lora_name}.safetensors"
+            lora_path = os.path.join(LORA_DIR, custom_lora_filename)
+            
+            if self.download_file(url, lora_path):
+                print(f"Downloaded external LoRA to {lora_path}")
 
 
     def predict(
@@ -150,11 +196,15 @@ class Predictor(BasePredictor):
             default=False,
         ),
         replicate_lora: str = Input(
-            description="URL to a tar file containing a replicate LoRA.",
+            description="URLs to tar files containing replicate LoRAs. Enter one URL per line for multiple LoRAs.",
             default="",
         ),
+        lora_name: str = Input(
+            description="Custom names for LoRA files (comma-separated list). If fewer names than links are provided, remaining LoRAs will use default naming (lora, lora_2, etc.).",
+            default="lora",
+        ),
         external_lora_link: str = Input(
-            description="Direct URL to a LoRA file.",
+            description="Direct URLs to LoRA files. Enter one URL per line for multiple LoRAs.",
             default="",
         ),
         output_format: str = optimise_images.predict_output_format(),
@@ -174,9 +224,9 @@ class Predictor(BasePredictor):
         if input_file:
             self.handle_input_file(input_file)
         if replicate_lora:
-            self.handle_replicate_lora(replicate_lora)
+            self.handle_replicate_loras(replicate_lora, lora_name)
         if external_lora_link:
-            self.handle_external_lora_link(external_lora_link)
+            self.handle_external_lora_links(external_lora_link, lora_name)
 
         workflow_json_content = workflow_json
         if workflow_json.startswith(("http://", "https://")):
