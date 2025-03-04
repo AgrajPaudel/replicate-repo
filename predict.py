@@ -19,6 +19,7 @@ os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 mimetypes.add_type("image/webp", ".webp")
 OUTPUT_DIR = "/tmp/outputs"
 INPUT_DIR = "/tmp/inputs"
+LORA_TYPES = ["safetensors","safetensor","sft"]
 COMFYUI_TEMP_OUTPUT_DIR = "ComfyUI/temp"
 LORA_DIR = "ComfyUI/models/loras"
 ALL_DIRECTORIES = [OUTPUT_DIR, INPUT_DIR, COMFYUI_TEMP_OUTPUT_DIR]
@@ -79,6 +80,52 @@ class Predictor(BasePredictor):
         print(f"Inputs uploaded to {INPUT_DIR}:")
         self.comfyUI.get_files(INPUT_DIR)
         print("====================================")
+
+  
+    def handle_lora_upload(self, lora_files):
+        """Handle uploading of individual or multiple LoRA files to the LoRA directory."""
+        # Ensure the LORA_DIR exists
+        os.makedirs(LORA_DIR, exist_ok=True)
+        
+        # Convert to list if a single file is provided
+        if not isinstance(lora_files, list):
+            lora_files = [lora_files]
+        
+        successful_uploads = 0
+        
+        for lora_file in lora_files:
+            file_extension = self.get_file_extension(lora_file)
+            
+            if file_extension not in LORA_TYPES:
+                print(f"Warning: {lora_file} does not have a LoRA file extension ({', '.join(LORA_TYPES)}). Skipping.")
+                continue
+            
+            # Extract the original filename
+            filename = os.path.basename(lora_file)
+            dest_path = os.path.join(LORA_DIR, filename)
+            
+            # Check if file already exists
+            if os.path.exists(dest_path):
+                print(f"Warning: {dest_path} already exists. Creating a backup.")
+                backup_path = os.path.join(LORA_DIR, f"{os.path.splitext(filename)[0]}_backup{file_extension}")
+                counter = 1
+                while os.path.exists(backup_path):
+                    backup_path = os.path.join(LORA_DIR, f"{os.path.splitext(filename)[0]}_backup_{counter}{file_extension}")
+                    counter += 1
+                shutil.copy(dest_path, backup_path)
+            
+            # Copy the LoRA file to the destination
+            try:
+                shutil.copy(lora_file, dest_path)
+                print(f"Successfully copied LoRA file to {dest_path}")
+                successful_uploads += 1
+            except Exception as e:
+                print(f"Error copying LoRA file {lora_file}: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        print(f"Successfully uploaded {successful_uploads} out of {len(lora_files)} LoRA files.")
+        return successful_uploads > 0
 
     def get_file_extension(self, input_file: Path) -> str:
         file_extension = os.path.splitext(input_file)[1].lower()
@@ -241,6 +288,10 @@ class Predictor(BasePredictor):
             description="Your ComfyUI workflow as JSON string or URL. You must use the API version of your workflow. Get it from ComfyUI using 'Save (API format)'. Instructions here: https://github.com/replicate/cog-comfyui",
             default="",
         ),
+        lora_upload: List[Path] = Input(
+            description="Upload your own LoRA files (.safetensors, .safetensor, .sft) to be used in ComfyUI. Files will be copied to the ComfyUI/models/loras directory with their original names preserved.",
+            default=None,
+        ),
         input_file: Path = Input(
             description="Input image, video, tar or zip file. Read guidance on workflows and input files here: https://github.com/replicate/cog-comfyui. Alternatively, you can replace inputs with URLs in your JSON workflow and the model will download them.",
             default=None,
@@ -281,6 +332,8 @@ class Predictor(BasePredictor):
             self.handle_replicate_loras(replicate_lora, lora_name)
         if external_lora_link:
             self.handle_external_lora_links(external_lora_link, lora_name)
+        if lora_upload:
+            self.handle_lora_upload(lora_upload)
     
         # Check for GPU availability
         gpu_available = self.check_gpu_availability()
